@@ -51,7 +51,6 @@ pipeline {
             -Dsonar.projectKey=test-app\
             -Dsonar.sources=. \
             -Dsonar.host.url=http://172.20.0.1:9001/  \
-            -Dsonar.exclusions=**/node_modules/** \
             -Dsonar.language=js \
             -Dsonar.login=squ_e798c50ee42eb24e478af95e51491fd9e75bcc5e"
           }
