@@ -1,0 +1,37 @@
+def COMMIT_ID
+pipeline {
+  agent any 
+  tools {nodejs "NodeJS"}
+  stages {
+    stage('Checkout') {
+      steps {
+        script {
+          checkout([$class: 'GitSCM',
+            branches: [[name: "main"]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [],
+            submoduleCfg: [],
+            userRemoteConfigs: [[credentialsId: 'wiss-git', url: 'https://gitlab.com/wissemsghaier2000/project_next.git']]
+          ]) 
+          sh "git rev-parse --short HEAD > commit_hash.txt"
+          COMMIT_ID = readFile('commit_hash.txt').trim()
+          echo "Commit Hash: ${COMMIT_ID}"
+        }          
+      }
+    }   
+    stage ('istall package ') {  
+      steps {
+        nodejs(nodeJSInstallationName: 'NodeJS'){
+          sh ' npm install'
+        }  
+      }
+    }
+    stage ('build ') {
+      steps {
+        nodejs(nodeJSInstallationName: 'NodeJS'){
+          sh " npm run build"
+        }
+      }  
+    }
+  }
+}
