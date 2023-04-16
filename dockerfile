@@ -1,8 +1,7 @@
 FROM node:16.19.1
+USER root 
 
 
-RUN mkdir -p /var/www/html/node_modules
-RUN chown -R node:node /var/www/html
 # Install Nginx
 RUN apt-get update && \
     apt-get install -y nginx
@@ -28,6 +27,7 @@ ADD ./ /var/www/html
 
 
 RUN chmod -R 777 /var/www/html
+RUN chown -R node:node /var/www/html
 EXPOSE 80
 
 # Start Nginx and the app
