@@ -22,8 +22,8 @@ COPY ["package.json", "package-lock.json*", "./"]
 RUN npm install 
  
 
-# Copy app files
-ADD ./ /var/www/html
+# Copy app file
+copy ./ ./
 COPY ./node_modules /var/www/html
 
 
