@@ -20,10 +20,10 @@ COPY ["package.json", "package-lock.json*", "./"]
 
 # Install app dependencies
 RUN npm install 
- 
+run npm run build
 
 # Copy app file
-copy ./ ./
+ADD ./  /var/www/html 
 COPY ./node_modules /var/www/html
 
 
