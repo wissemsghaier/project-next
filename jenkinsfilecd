@@ -17,56 +17,58 @@ pipeline {
     NEXUS_PASSWORD = 'wissem'
   }
   stages {
-      stage('Check Nexus Tag') {
-        steps {
-          script {
-            commitId = 'params.COMMIT_ID'
-            echo "Commit ID: ${params.COMMIT_ID}"
-            url = "${NEXUS_URL}/repository/maven-releases/next/quantum/soluttions/next-js/${params.COMMIT_ID}/next-js-${params.COMMIT_ID}.zip"
-            response = sh(script: "curl -sS -X GET ${url}", returnStdout: true)    
-            echo "response: ${response}"     
-            if (response.contains("404 - Nexus Repository Manager")) {
-              error "Version tag '${params.COMMIT_ID}' does not exist in Nexus for artifact '${GROUP_ID}:${ARTIFACT_ID}'"
-            } 
-            else {
-               echo "Version tag '${params.COMMIT_ID}' exists in Nexus for artifact '${GROUP_ID}:${ARTIFACT_ID}'"
-            }
+    stage('Check Nexus Tag') {
+      steps {
+        script {
+          commitId = 'params.COMMIT_ID'
+          echo "Commit ID: ${params.COMMIT_ID}"
+          url = "${NEXUS_URL}/repository/maven-releases/next/quantum/soluttions/next-js/${params.COMMIT_ID}/next-js-${params.COMMIT_ID}.zip"
+          response = sh(script: "curl -sS -X GET ${url}", returnStdout: true)    
+          echo "response: ${response}"     
+          if (response.contains("404 - Nexus Repository Manager")) {
+            error "Version tag '${params.COMMIT_ID}' does not exist in Nexus for artifact '${GROUP_ID}:${ARTIFACT_ID}'"
+          } 
+          else {
+            echo "Version tag '${params.COMMIT_ID}' exists in Nexus for artifact '${GROUP_ID}:${ARTIFACT_ID}'"
           }
         }
       }
-      stage('pull code from Nexus') {
-        steps {
-          script {
-            url = "${NEXUS_URL}/repository/maven-releases/next/quantum/soluttions/next-js/${params.COMMIT_ID}/next-js-${params.COMMIT_ID}.zip"
+    }
+    stage('pull code from Nexus') {
+      steps {
+        script {
+          url = "${NEXUS_URL}/repository/maven-releases/next/quantum/soluttions/next-js/${params.COMMIT_ID}/next-js-${params.COMMIT_ID}.zip"
             sh "curl -L -o next.zip ${url}"  
-          }
         }
       }
-      stage ('unzip') {
-        steps {
-          sh "apt-get install unzip"
-          sh "unzip -o next.zip"
+    }
+    stage ('unzip') {
+      steps {
+        sh "apt-get install unzip"
+        sh "unzip -o next.zip"
+      }
+    }
+    stage('Build Docker Image') {
+      steps {
+        // sh "chown -R jenkins:jenkins ."
+        sh "docker build -f dockerfile -t hamza:'${params.COMMIT_ID}' ."
+      }
+    }
+    stage('Push to Nexus') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'nexus-jenkins', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+          sh "docker login -u wissem  --password wissem 172.20.0.10:8085/repository/docker-repo"
+          sh "docker tag hamza:'${params.COMMIT_ID}' 172.20.0.10:8085/repository/docker-repo/hamza:'${params.COMMIT_ID}'"
+          sh "docker push 172.20.0.10:8085/repository/docker-repo/hamza:'${params.COMMIT_ID}'"
         }
       }
-      stage('Build Docker Image') {
-        steps {
-          // sh "chown -R jenkins:jenkins ."
-          sh "docker build -f dockerfile -t hamza:'${params.COMMIT_ID}' ."
-        }
+    }
+    stage('run container'){
+      steps {
+        sh " docker run -dit --name nextjs  -p 8888:80 hamza:'${params.COMMIT_ID}'"
       }
-      stage('Push to Nexus') {
-        steps {
-          withCredentials([usernamePassword(credentialsId: 'nexus-jenkins', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
-            sh "docker login -u wissem  --password wissem 172.20.0.10:8085/repository/docker-repo"
-            sh "docker tag hamza:'${params.COMMIT_ID}' 172.20.0.10:8085/repository/docker-repo/hamza:'${params.COMMIT_ID}'"
-            sh "docker push 172.20.0.10:8085/repository/docker-repo/hamza:'${params.COMMIT_ID}'"
-          }
-        }
-      }
-      stage('run container'){
-        steps {
-          sh " docker run -dit --name nextjs  -p 8888:80 hamza:'${params.COMMIT_ID}'"
-        }
-      }
+    }
+  }
+}
       
       
