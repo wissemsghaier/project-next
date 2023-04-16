@@ -23,7 +23,7 @@ RUN npm install
  
 
 # Copy app files
-ADD ./ /var/www/html
+copy . /var/www/html
 
 
 RUN chmod -R 777 /var/www/html
