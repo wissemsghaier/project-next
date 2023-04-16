@@ -63,6 +63,13 @@ pipeline {
         waitForQualityGate abortPipeline: true
       }
     }
+    stage(" Publish to Nexus Repository Manager") {
+      steps {
+        sh "apt-get install zip"
+        sh "zip -r project_nextjs.zip ."
+        sh "curl -v -u wissem:wissem --upload-file project_nextjs.zip  http://172.20.0.10:8081/repository/maven-releases/next/quantum/soluttions/next-js/${COMMIT_ID}/next-js-${COMMIT_ID}.zip"
+      }
+    }    
   }
   post {
     always {      
