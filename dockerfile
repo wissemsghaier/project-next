@@ -16,7 +16,7 @@ COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 WORKDIR /var/www/html
 
 # Copy package.json and package-lock.json
-COPY ["package.json", "package-lock.json*", "./"]
+COPY package*.json ./
 
 # Install app dependencies
 RUN npm install 
