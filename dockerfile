@@ -6,7 +6,7 @@ USER root
 RUN apt-get update && \
     apt-get install -y nginx
 
-# Remove default Nginx configuration
+
 RUN rm /etc/nginx/sites-enabled/default
 
 # Copy custom Nginx configuration
